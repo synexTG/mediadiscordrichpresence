@@ -15,6 +15,7 @@ A windows application which shares your plex and/or emby activity on discord!
 
 > All implementations will show the remaining time of your current playback and also if your playback is paused or not.
 > The Logo of the show, movie or live tv channel will also be shown in your discord activity.
+
 Following configuration will be needed:
   - PlexUrl: http://plex.exmaple.com:32400
   - "PlexProfileName": UsedProfileName
