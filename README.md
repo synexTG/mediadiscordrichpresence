@@ -18,10 +18,10 @@ A windows application which shares your plex and/or emby activity on discord!
 
 Following configuration will be needed:
   - PlexUrl: http://plex.exmaple.com:32400
-  - "PlexProfileName": UsedProfileName
-  - "PlexAuthToken": PlexAuthToken
-  - "EmbyUrl": http://emby.example.com:8096
-  - "EmbyProfileName": UsedProfileName
-  - "EmbyEpgHourOffset":  EpgOffset
-  - "EmbyApiKey": EmbyApiKey
-  - "ImgurApiKey": ImgurApiKey
+  - PlexProfileName: UsedProfileName
+  - PlexAuthToken: PlexAuthToken
+  - EmbyUrl: http://emby.example.com:8096
+  - EmbyProfileName: UsedProfileName
+  - EmbyEpgHourOffset:  EpgOffset
+  - EmbyApiKey: EmbyApiKey
+  - ImgurApiKey: ImgurApiKey
