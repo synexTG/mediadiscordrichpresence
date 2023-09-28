@@ -24,7 +24,7 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Better documentation with installation guide and all relevant information
 - Add a ready to launch executable as a release
 
-##Example Config
+## Example Config
 ```json
 {
   "RichPresence": {
