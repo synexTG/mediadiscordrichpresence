@@ -169,7 +169,7 @@ public class PlexProvider : IProvider
                 return new ActivityObject()
                 {
                     Description = activityObjectDescription,
-                    Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Plex : Config.Plex.Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Logo = GetCorrectImageUrl(Config.Plex.Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + Config.Plex.AuthToken),
                     Title = selectedSession.GrandparentTitle,
                     IsPaused = selectedSession.Player.State == "paused",
                     DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
@@ -192,12 +192,19 @@ public class PlexProvider : IProvider
                 return new ActivityObject()
                 {
                     Description = movieDurationStr + " · Genre: " + genreStr,
-                    Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Plex : Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Logo = GetCorrectImageUrl(Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken),
                     Title = selectedSession.Title + " (" + selectedSession.Year.ToString() + ")",
                     IsPaused = selectedSession.Player.State == "paused",
                     DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
                 };
         }
         throw new Exception("Something went wrong on getting the current activity of plex");
+    }
+
+    public string GetCorrectImageUrl(string pUrl)
+    {
+        if (Config.Images.UseProviderImageLinks) return pUrl;
+        if (Config.Images.UseImgur) return ImgurUploader.UploadImage(pUrl, Config.Images.ImgurClientId).data.link;
+        return Config.ImageTemplateLinks.Plex;
     }
 }

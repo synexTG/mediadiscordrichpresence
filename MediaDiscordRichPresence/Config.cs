@@ -51,7 +51,7 @@ public class sImgages
 {
     public bool UseProviderImageLinks { get; set; }
     public bool UseImgur { get; set; }
-    public string ImgurApiKey { get; set; }
+    public string ImgurClientId { get; set; }
 }
 
 public class sImageTemplateLinks
