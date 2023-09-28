@@ -52,7 +52,6 @@ Example Config:
     "HiddenLibraries": []
   },
   "Images": {
-    "DisablePosters": true,
     //Set both false to disable images and display the image of the provider
     "UseProviderImageLinks": false, //If true the program will use the direct links from plex or emby, could make problems with authentication and security -> It is not recommended
     "UseImgur": true,
