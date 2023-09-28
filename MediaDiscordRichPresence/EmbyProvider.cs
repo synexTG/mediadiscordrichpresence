@@ -142,6 +142,46 @@ public class EmbyProvider : IProvider
                             IsPaused = c.PlayState.IsPaused,
                             DurationLeft = (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks/10000)
                         };
+                    case ActivityType.Show:
+
+                        TimeSpan episodeDuration = TimeSpan.FromMilliseconds(c.NowPlayingItem.RunTimeTicks / 10000);
+
+                        string activityObjectDescription = "";
+                        if (episodeDuration.Days > 0) activityObjectDescription += episodeDuration.Days + "d";
+                        if (episodeDuration.Hours > 0) activityObjectDescription += episodeDuration.Hours + "h";
+                        if (episodeDuration.Minutes > 0) activityObjectDescription += episodeDuration.Minutes + "m";
+                        if (episodeDuration.Seconds > 0) activityObjectDescription += episodeDuration.Seconds + "s";
+
+                        activityObjectDescription += " · S";
+                        if (c.NowPlayingItem.ParentIndexNumber.ToString().Length == 1)
+                        {
+                            activityObjectDescription += "0" + c.NowPlayingItem.ParentIndexNumber.ToString();
+                        }
+                        else
+                        {
+                            activityObjectDescription += c.NowPlayingItem.ParentIndexNumber.ToString();
+                        }
+                        activityObjectDescription += "E";
+
+                        if (c.NowPlayingItem.IndexNumber.ToString().Length == 1)
+                        {
+                            activityObjectDescription += "0" + c.NowPlayingItem.IndexNumber.ToString();
+                        }
+                        else
+                        {
+                            activityObjectDescription += c.NowPlayingItem.IndexNumber.ToString();
+                        }
+                        activityObjectDescription += " · " + c.NowPlayingItem.Name;
+
+
+                        return new ActivityObject()
+                        {
+                            Description = activityObjectDescription,
+                            Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Emby : Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.SeriesId + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.SeriesPrimaryImageTag + "&quality=90",
+                            Title = c.NowPlayingItem.SeriesName,
+                            IsPaused = c.PlayState.IsPaused,
+                            DurationLeft = (c.NowPlayingItem.RunTimeTicks/10000) - (c.PlayState.PositionTicks/10000)
+                        };
                 }
             }
         }
