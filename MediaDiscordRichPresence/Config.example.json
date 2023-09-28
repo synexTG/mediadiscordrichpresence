@@ -6,7 +6,9 @@
     "WatchingTV": "Watching TV",
     "WatchingMovie": "Watching a movie",
     "WatchingShow": "Watching a show",
-    "WatchingUnknown": "Watching something"
+    "WatchingUnknown": "Watching something",
+    "Paused": "Paused", //Small icon tooltip,
+    "Playing": "Playing" //Small icon tooltip
   },
   "Discord": {
     "ApplicationId": "DiscordApplicationId"
