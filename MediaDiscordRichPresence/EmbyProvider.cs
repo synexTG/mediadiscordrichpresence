@@ -1,6 +1,7 @@
 ﻿using DiscordRPC;
 using MediaDiscordRichPresence.EmbyModels;
 using MediaDiscordRichPresence.Models;
+using Plex.ServerApi.PlexModels.Media;
 using RestSharp;
 
 namespace MediaDiscordRichPresence;
@@ -94,6 +95,8 @@ public class EmbyProvider : IProvider
             if (c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
             {
                 if(c.NowPlayingItem.Type == "TvChannel") return ActivityType.LiveTV;
+                if (c.NowPlayingItem.Type == "Episode") return ActivityType.Show;
+                if (c.NowPlayingItem.Type == "Movie") return ActivityType.Movie;
             }
         }
         return ActivityType.None;
@@ -105,14 +108,41 @@ public class EmbyProvider : IProvider
         {
             if (c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
             {
-                return new ActivityObject()
+                switch(GetActivityType())
                 {
-                    Description = "Program: " + c.NowPlayingItem.CurrentProgram.Name,
-                    Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Emby : Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9",
-                    Title = c.NowPlayingItem.CurrentProgram.ChannelName,
-                    IsPaused = c.PlayState.IsPaused,
-                    DurationLeft = (long) (c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
-                };
+                    case ActivityType.LiveTV:
+                        return new ActivityObject()
+                        {
+                            Description = "Program: " + c.NowPlayingItem.CurrentProgram.Name,
+                            Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Emby : Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9",
+                            Title = c.NowPlayingItem.CurrentProgram.ChannelName,
+                            IsPaused = c.PlayState.IsPaused,
+                            DurationLeft = (long)(c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
+                        };
+                    case ActivityType.Movie:
+                        TimeSpan movieDuration = TimeSpan.FromMilliseconds(c.NowPlayingItem.RunTimeTicks/10000);
+
+                        string movieDurationStr = "";
+                        if (movieDuration.Hours > 0) movieDurationStr += movieDuration.Hours + "h";
+                        if (movieDuration.Minutes > 0) movieDurationStr += movieDuration.Minutes + "m";
+                        if (movieDuration.Seconds > 0) movieDurationStr += movieDuration.Seconds + "s";
+
+                        string genreStr = "";
+                        foreach (string genre in c.NowPlayingItem.Genres)
+                        {
+                            if (genreStr != "") genreStr += ", ";
+                            genreStr += genre;
+                        }
+
+                        return new ActivityObject()
+                        {
+                            Description = movieDurationStr + " · Genre: " + genreStr,
+                            Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Emby : Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
+                            Title = c.NowPlayingItem.Name + " (" + c.NowPlayingItem.ProductionYear.ToString() + ")",
+                            IsPaused = c.PlayState.IsPaused,
+                            DurationLeft = (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks/10000)
+                        };
+                }
             }
         }
         throw new Exception("Something went wrong on getting the current activity of emby");

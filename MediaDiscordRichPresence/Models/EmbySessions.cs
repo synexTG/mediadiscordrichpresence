@@ -58,34 +58,59 @@ public class EmbySessions
     public class Nowplayingitem
     {
         public string Name { get; set; }
+        public string OriginalTitle { get; set; }
         public string ServerId { get; set; }
         public string Id { get; set; }
         public DateTime DateCreated { get; set; }
         public string PresentationUniqueKey { get; set; }
-        public object[] ExternalUrls { get; set; }
+        public string Container { get; set; }
+        public DateTime PremiereDate { get; set; }
+        public Externalurl[] ExternalUrls { get; set; }
+        public string Path { get; set; }
+        public string OfficialRating { get; set; }
+        public string Overview { get; set; }
         public object[] Taglines { get; set; }
+        public string[] Genres { get; set; }
+        public float CommunityRating { get; set; }
+        public long RunTimeTicks { get; set; }
+        public long Size { get; set; }
+        public string FileName { get; set; }
         public int Bitrate { get; set; }
-        public string Number { get; set; }
-        public string ChannelNumber { get; set; }
+        public int ProductionYear { get; set; }
         public Providerids ProviderIds { get; set; }
         public bool IsFolder { get; set; }
         public string ParentId { get; set; }
         public string Type { get; set; }
+        public Studio[] Studios { get; set; }
+        public Genreitem[] GenreItems { get; set; }
+        public int LocalTrailerCount { get; set; }
         public float PrimaryImageAspectRatio { get; set; }
         public Mediastream[] MediaStreams { get; set; }
         public Imagetags ImageTags { get; set; }
-        public object[] BackdropImageTags { get; set; }
+        public string[] BackdropImageTags { get; set; }
+        public Chapter[] Chapters { get; set; }
         public string MediaType { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public string Number { get; set; }
+        public string ChannelNumber { get; set; }
         public Currentprogram CurrentProgram { get; set; }
     }
 
     public class Providerids
     {
+        public string Tmdb { get; set; }
+        public string Imdb { get; set; }
+        public string Tvdb { get; set; }
+        public string OfficialWebsite { get; set; }
+        public string Wikipedia { get; set; }
     }
 
     public class Imagetags
     {
         public string Primary { get; set; }
+        public string Logo { get; set; }
+        public string Thumb { get; set; }
     }
 
     public class Currentprogram
@@ -126,16 +151,32 @@ public class EmbySessions
     {
     }
 
+    public class Externalurl
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+    }
+
+    public class Studio
+    {
+        public string Name { get; set; }
+        public int Id { get; set; }
+    }
+
+    public class Genreitem
+    {
+        public string Name { get; set; }
+        public int Id { get; set; }
+    }
+
     public class Mediastream
     {
         public string Codec { get; set; }
-        public string ColorTransfer { get; set; }
-        public string ColorPrimaries { get; set; }
-        public string ColorSpace { get; set; }
-        public long StreamStartTimeTicks { get; set; }
+        public string Language { get; set; }
         public string TimeBase { get; set; }
         public string VideoRange { get; set; }
         public string DisplayTitle { get; set; }
+        public string DisplayLanguage { get; set; }
         public string NalLengthSize { get; set; }
         public bool IsInterlaced { get; set; }
         public int BitRate { get; set; }
@@ -158,13 +199,21 @@ public class EmbySessions
         public string PixelFormat { get; set; }
         public int Level { get; set; }
         public bool IsAnamorphic { get; set; }
-        public string Language { get; set; }
-        public string DisplayLanguage { get; set; }
+        public int AttachmentSize { get; set; }
         public string ChannelLayout { get; set; }
         public int Channels { get; set; }
         public int SampleRate { get; set; }
-        public string Extradata { get; set; }
+        public string Title { get; set; }
         public string SubtitleLocationType { get; set; }
+        public long StreamStartTimeTicks { get; set; }
+    }
+
+    public class Chapter
+    {
+        public long StartPositionTicks { get; set; }
+        public string Name { get; set; }
+        public string MarkerType { get; set; }
+        public int ChapterIndex { get; set; }
     }
 
     public class Transcodinginfo
@@ -179,7 +228,7 @@ public class EmbySessions
         public int AudioBitrate { get; set; }
         public int VideoBitrate { get; set; }
         public int Framerate { get; set; }
-        public long TranscodingPositionTicks { get; set; }
+        public int TranscodingPositionTicks { get; set; }
         public int TranscodingStartPositionTicks { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
@@ -220,6 +269,5 @@ public class EmbySessions
         public string Param { get; set; }
         public string ParamShort { get; set; }
     }
-
 
 }
