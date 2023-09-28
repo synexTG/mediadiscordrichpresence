@@ -77,15 +77,22 @@ public class PlexProvider : IProvider
             }
         };
 
-        if (currentRichPresence is null) client.SetPresence(updatedRichPresence);
+        if (currentRichPresence is null)
+        {
+            if (CurrentActivityObject.IsPaused) updatedRichPresence.Timestamps = null;
+            client.SetPresence(updatedRichPresence);
+        }
 
         if (currentRichPresence is not null && (currentRichPresence.Details != updatedRichPresence.Details ||
             currentRichPresence.State != updatedRichPresence.State ||
             currentRichPresence.Assets.LargeImageText != updatedRichPresence.Assets.LargeImageText ||
             currentRichPresence.Assets.SmallImageText != updatedRichPresence.Assets.SmallImageText ||
-            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) > 10000 ||
-            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) < -10000))
-                client.SetPresence(updatedRichPresence);
+            (Config.RichPresence.ShowTimeLeftIfPossible && ((CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) > 10000 ||
+            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) < -10000))))
+        {
+            if (CurrentActivityObject.IsPaused) updatedRichPresence.Timestamps = null;
+            client.SetPresence(updatedRichPresence);
+        }
         SavedDurationLeft = CurrentActivityObject.DurationLeft;
     }
 
