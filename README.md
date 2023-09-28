@@ -17,8 +17,14 @@ A windows application which shares your plex and/or emby activity on discord!
 > The Logo of the show, movie or live tv channel will also be shown in your discord activity.
 
 The dev branch currently only supports movies and shows for Plex and Emby. For Emby it also supports Live TV. More is coming soon and when all is included there will be a release (+ tutorial)
+## To-Do
+- Add Plex Live TV support
+- Check possibility to add Recordings, Music and audiobooks
+- Add the possibility to remove the Provider prefix in the rich presence
+- Better documentation with installation guide and all relevant information
+- Add a ready to launch executable as a release
 
-Example Config:
+##Example Config
 ```json
 {
   "RichPresence": {
