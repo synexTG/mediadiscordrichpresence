@@ -15,6 +15,7 @@ public class sDiscord
 
 public class sRichPresence
 {
+    public bool RefreshConfigOnEveryCheck { get; set; }
     public bool ShowTimeLeftIfPossible { get; set; }
     public int RefreshIntervalInSeconds { get; set; }
     public int PriorityMode { get; set; }

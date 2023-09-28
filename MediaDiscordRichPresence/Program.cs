@@ -44,31 +44,40 @@ async Task InitializeAsync()
     var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(config.RichPresence.RefreshIntervalInSeconds));
     while (await periodicTimer.WaitForNextTickAsync())
     {
-        try { 
+        try {
+            if (config.RichPresence.RefreshConfigOnEveryCheck)
+            {
+                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("Config.json"));
+                plex.Config = config;
+                emby.Config = config;
+            }
+
             switch (config.RichPresence.PriorityMode)
             {
                 case 0:
-                    if (plex.IsCurrentlyPlaying() && config.Plex.Enabled) {
+                    if (config.Plex.Enabled && plex.IsCurrentlyPlaying()) {
                         plex.SetRichPresence(client);
                         break;
                     }
-                    if (emby.IsCurrentlyPlaying() && config.Emby.Enabled)
+                    if (config.Emby.Enabled && emby.IsCurrentlyPlaying())
                     {
                         emby.SetRichPresence(client);
                         break;
                     }
+                    client.ClearPresence();
                     break;
                 case 1:
-                    if (emby.IsCurrentlyPlaying() && config.Emby.Enabled)
+                    if (config.Emby.Enabled && emby.IsCurrentlyPlaying())
                     {
                         emby.SetRichPresence(client);
                         break;
                     }
-                    if (plex.IsCurrentlyPlaying() && config.Plex.Enabled)
+                    if (config.Plex.Enabled && plex.IsCurrentlyPlaying())
                     {
                         plex.SetRichPresence(client);
                         break;
                     }
+                    client.ClearPresence();
                     break;
             }
         } catch (Exception ex)

@@ -11,12 +11,12 @@ public class PlexProvider : IProvider
 {
     private ActivityObject CurrentActivityObject { get; set; } = new ActivityObject();
     private IPlexServerClient plexServerClient;
-    private Config Config { get; set; }
+    private long SavedDurationLeft { get; set; } = 0;
+    public Config Config { get; set; }
     public PlexProvider(Config pConfig, ServiceProvider pServiceProvider)
     {
-        plexServerClient = pServiceProvider.GetService<IPlexServerClient>();
-
         Config = pConfig;
+        if(Config.Plex.Enabled) plexServerClient = pServiceProvider.GetService<IPlexServerClient>();
     }
 
     public bool IsCurrentlyPlaying()
@@ -36,14 +36,7 @@ public class PlexProvider : IProvider
 
     public void SetRichPresence(DiscordRpcClient client)
     {
-        ActivityObject ActivityObject = GetActivityObject();
-
-        if (ActivityObject.Title == CurrentActivityObject.Title 
-            && ActivityObject.Logo == CurrentActivityObject.Logo 
-            && ActivityObject.Description == CurrentActivityObject.Description 
-            && ActivityObject.IsPaused == CurrentActivityObject.IsPaused) return;
-
-        CurrentActivityObject = ActivityObject;
+        CurrentActivityObject = GetActivityObject();
 
         //Setting Tooltip for the large Image
         string largeImageText = Config.RichPresence.WatchingUnknown;
@@ -69,7 +62,8 @@ public class PlexProvider : IProvider
             timestamps = CurrentActivityObject.DurationLeft != 0 ? Timestamps.FromTimeSpan(TimeSpan.FromMilliseconds(CurrentActivityObject.DurationLeft)) : Timestamps.Now;
         }
 
-        client.SetPresence(new RichPresence()
+        RichPresence currentRichPresence = client.CurrentPresence;
+        RichPresence updatedRichPresence = new RichPresence()
         {
             Timestamps = timestamps,
             Details = "Plex: " + CurrentActivityObject.Title,
@@ -81,7 +75,18 @@ public class PlexProvider : IProvider
                 SmallImageKey = CurrentActivityObject.IsPaused ? Config.ImageTemplateLinks.Paused : Config.ImageTemplateLinks.Playing,
                 SmallImageText = CurrentActivityObject.IsPaused ? Config.RichPresence.Paused : Config.RichPresence.Playing
             }
-        });
+        };
+
+        if (currentRichPresence is null) client.SetPresence(updatedRichPresence);
+
+        if (currentRichPresence is not null && (currentRichPresence.Details != updatedRichPresence.Details ||
+            currentRichPresence.State != updatedRichPresence.State ||
+            currentRichPresence.Assets.LargeImageText != updatedRichPresence.Assets.LargeImageText ||
+            currentRichPresence.Assets.SmallImageText != updatedRichPresence.Assets.SmallImageText ||
+            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) > 10000 ||
+            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) < -10000))
+                client.SetPresence(updatedRichPresence);
+        SavedDurationLeft = CurrentActivityObject.DurationLeft;
     }
 
     private ActivityType GetActivityType()
@@ -150,7 +155,7 @@ public class PlexProvider : IProvider
                 {
                     activityObjectDescription += selectedSession.Index.ToString();
                 }
-                activityObjectDescription += selectedSession.Title;
+                activityObjectDescription += " · " + selectedSession.Title;
 
 
                 return new ActivityObject()

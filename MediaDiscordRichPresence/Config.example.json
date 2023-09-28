@@ -1,5 +1,6 @@
 {
   "RichPresence": {
+    "RefreshConfigOnEveryCheck": false, //Should be disabled for default setup, could be helpful to test some settings
     "ShowTimeLeftIfPossible": true, //If true it will try to show how much time of the playback is left, if false it will show how long the current rich presence is set
     "RefreshIntervalInSeconds": 3,
     "PriorityMode": 0, //0 = Plex first, than Emby | 1 = Emby first, than Plex
