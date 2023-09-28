@@ -21,6 +21,7 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Add Plex Live TV support
 - Check possibility to add Recordings, Music and audiobooks
 - Add the possibility to remove the Provider prefix in the rich presence
+- add the possibility to disable certain activity types from being shared
 - Better documentation with installation guide and all relevant information
 - Add a ready to launch executable as a release
 
