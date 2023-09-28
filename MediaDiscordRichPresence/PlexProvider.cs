@@ -169,7 +169,7 @@ public class PlexProvider : IProvider
                 return new ActivityObject()
                 {
                     Description = activityObjectDescription,
-                    Logo = Config.Images.DisablePosters ? Config.ImageTemplateLinks.Plex : Config.Plex.Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Plex : Config.Plex.Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
                     Title = selectedSession.GrandparentTitle,
                     IsPaused = selectedSession.Player.State == "paused",
                     DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
@@ -192,7 +192,7 @@ public class PlexProvider : IProvider
                 return new ActivityObject()
                 {
                     Description = movieDurationStr + " · Genre: " + genreStr,
-                    Logo = Config.Images.DisablePosters ? Config.ImageTemplateLinks.Plex : Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Logo = !Config.Images.UseProviderImageLinks && !Config.Images.UseImgur ? Config.ImageTemplateLinks.Plex : Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
                     Title = selectedSession.Title + " (" + selectedSession.Year.ToString() + ")",
                     IsPaused = selectedSession.Player.State == "paused",
                     DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
