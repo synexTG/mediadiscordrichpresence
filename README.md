@@ -19,6 +19,7 @@ A windows application which shares your plex and/or emby activity on discord!
 The dev branch currently only supports movies and shows for Plex and Live TV for Emby. More is coming soon and when all is included there will be a release (+ tutorial)
 
 Example Config:
+```json
 {
   "RichPresence": {
     "RefreshConfigOnEveryCheck": false, //Should be disabled for default setup, could be helpful to test some settings
@@ -64,3 +65,4 @@ Example Config:
     "Emby": "https://i.imgur.com/vLQYhPk.png" //Will be used as the rich presence logo if DisablePosters is true
   }
 }
+```
