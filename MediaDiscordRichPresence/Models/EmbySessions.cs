@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MediaDiscordRichPresence.EmbyModels;
-public class Sessions
+public class EmbySessions
 {
 
     public class Rootobject

@@ -1,43 +1,25 @@
 ﻿using DiscordRPC;
 using MediaDiscordRichPresence.EmbyModels;
+using MediaDiscordRichPresence.Models;
 using RestSharp;
 
 namespace MediaDiscordRichPresence;
 public class EmbyProvider : IProvider
 {
-    public ActivityObject activityObject { get; set; } = new ActivityObject();
-    public string Url { get; set; }
-    public string ApiKey { get; set; }
-    public string ProfileName { get; set; }
-    public int EpgOffset { get; set; }
-    public EmbyProvider(string pUrl, string pApiKey, string pProfileName, int pEpgOffset) 
+    private ActivityObject CurrentActivityObject { get; set; } = new ActivityObject();
+    private Config Config { get; set; }
+    public EmbyProvider(Config pConfig) 
     {
-        //Init connection
-        Url = pUrl;
-        ApiKey = pApiKey;
-        ProfileName = pProfileName;
-        EpgOffset = pEpgOffset;
-        Console.WriteLine("Emby connection successfully initialized.");
+        Config = pConfig;
     }
 
     public bool IsCurrentlyPlaying()
     {
-        var options = new RestClientOptions(Url)
+        foreach(EmbySessions.Class1 c in GetSessions())
         {
-            MaxTimeout = -1,
-        };
-        var client = new RestClient(options);
-        var request = new RestRequest("/emby/Sessions?api_key=" + ApiKey, Method.Get);
-        RestResponse response = client.Execute(request);
-        if(response.IsSuccessful)
-        {
-            List<Sessions.Class1> sessions = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sessions.Class1>>(response.Content);
-            foreach(Sessions.Class1 c in sessions)
+            if(c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
             {
-                if(c.PlayState.CanSeek && c.UserName == ProfileName)
-                {
-                    return true;
-                }
+                return true;
             }
         }
         return false;
@@ -45,97 +27,99 @@ public class EmbyProvider : IProvider
 
     public void SetRichPresence(DiscordRpcClient client)
     {
-        //GetNewValues
-        ActivityObject newActivityObject = GetActivityObject();
-        if (newActivityObject is null)
-        {
-            if (client.CurrentPresence is not null) client.ClearPresence();
-            return;
-        }
-        if (newActivityObject.Title == activityObject.Title && newActivityObject.Logo == activityObject.Logo && newActivityObject.Description == activityObject.Description && newActivityObject.IsPaused == activityObject.IsPaused)
-        {
-            return;
-        }
-        activityObject = newActivityObject;
+        ActivityObject ActivityObject = GetActivityObject();
 
-        string largeImageText = "Unknown";
-        if (IsLiveTV())
+        if (ActivityObject.Title == CurrentActivityObject.Title 
+            && ActivityObject.Logo == CurrentActivityObject.Logo 
+            && ActivityObject.Description == CurrentActivityObject.Description 
+            && ActivityObject.IsPaused == CurrentActivityObject.IsPaused) return;
+
+        CurrentActivityObject = ActivityObject;
+
+        //Setting Tooltip for the large Image
+        string largeImageText = Config.RichPresence.WatchingUnknown;
+        switch(GetActivityType()) {
+            case ActivityType.LiveTV:
+                largeImageText = Config.RichPresence.WatchingTV;
+                break;
+            case ActivityType.Movie:
+                largeImageText = Config.RichPresence.WatchingMovie;
+                break;
+            case ActivityType.Show:
+                largeImageText = Config.RichPresence.WatchingShow;
+                break;
+            default: 
+                break;
+        }
+
+        //Setting TimeStamp
+        Timestamps timestamps = Timestamps.Now;
+        if(Config.RichPresence.ShowTimeLeftIfPossible)
         {
-            largeImageText = "Watching TV";
+            timestamps = CurrentActivityObject.DurationLeft != 0 ? Timestamps.FromTimeSpan(TimeSpan.FromMilliseconds(CurrentActivityObject.DurationLeft)) : Timestamps.Now;
         }
 
         client.SetPresence(new RichPresence()
         {
-            Timestamps = activityObject.DurationLeft != 0 ? Timestamps.FromTimeSpan(TimeSpan.FromMilliseconds(activityObject.DurationLeft)) : Timestamps.Now,
-            Details = "Emby: " + activityObject.Title,
-            State = activityObject.Description,
+            Timestamps = timestamps,
+            Details = "Emby: " + CurrentActivityObject.Title,
+            State = CurrentActivityObject.Description,
             Assets = new Assets()
             {
-                LargeImageKey = activityObject.Logo,
+                LargeImageKey = CurrentActivityObject.Logo,
                 LargeImageText = largeImageText,
-                SmallImageKey = activityObject.IsPaused ? "https://i.imgur.com/VomKC7b.png" : "https://i.imgur.com/cK2Tn8l.png",
-                SmallImageText = activityObject.IsPaused ? "Paused" : "Playing"
+                SmallImageKey = CurrentActivityObject.IsPaused ? Config.ImageTemplateLinks.Paused : Config.ImageTemplateLinks.Playing,
+                SmallImageText = CurrentActivityObject.IsPaused ? Config.RichPresence.Paused : Config.RichPresence.Playing
             }
         });
     }
 
-    private bool IsLiveTV()
+    private ActivityType GetActivityType()
     {
-        var options = new RestClientOptions(Url)
+        foreach (EmbySessions.Class1 c in GetSessions())
         {
-            MaxTimeout = -1,
-        };
-        var client = new RestClient(options);
-        var request = new RestRequest("/emby/Sessions?api_key=" + ApiKey, Method.Get);
-        RestResponse response = client.Execute(request);
-        if (response.IsSuccessful)
-        {
-            List<Sessions.Class1> sessions = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sessions.Class1>>(response.Content);
-            foreach (Sessions.Class1 c in sessions)
+            if (c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
             {
-                if (c.PlayState.CanSeek && c.UserName == ProfileName)
-                {
-                    return c.NowPlayingItem.Type == "TvChannel";
-                }
+                if(c.NowPlayingItem.Type == "TvChannel") return ActivityType.LiveTV;
             }
         }
-        return false;
+        return ActivityType.None;
     }
 
     private ActivityObject GetActivityObject()
     {
-        var options = new RestClientOptions(Url)
+        foreach (EmbySessions.Class1 c in GetSessions())
+        {
+            if (c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
+            {
+                return new ActivityObject()
+                {
+                    Description = "Program: " + c.NowPlayingItem.CurrentProgram.Name,
+                    Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9",
+                    Title = c.NowPlayingItem.CurrentProgram.ChannelName,
+                    IsPaused = c.PlayState.IsPaused,
+                    DurationLeft = (long) (c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
+                };
+            }
+        }
+        throw new Exception("Something went wrong on getting the current activity of emby");
+    }
+
+    private List<EmbySessions.Class1> GetSessions()
+    {
+        var options = new RestClientOptions(Config.Emby.Url)
         {
             MaxTimeout = -1,
         };
         var client = new RestClient(options);
-        var request = new RestRequest("/emby/Sessions?api_key=" + ApiKey, Method.Get);
+        var request = new RestRequest("/emby/Sessions?api_key=" + Config.Emby.ApiKey, Method.Get);
         RestResponse response = client.Execute(request);
         if (response.IsSuccessful)
         {
-            List<Sessions.Class1> sessions = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Sessions.Class1>>(response.Content);
-            foreach (Sessions.Class1 c in sessions)
-            {
-                if (c.PlayState.CanSeek && c.UserName == ProfileName)
-                {
-                    return new ActivityObject()
-                    {
-                        Description = "Program: " + c.NowPlayingItem.CurrentProgram.Name,
-                        Logo = Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9",
-                        Title = c.NowPlayingItem.CurrentProgram.ChannelName,
-                        IsPaused = c.PlayState.IsPaused,
-                        DurationLeft = (long) (c.NowPlayingItem.CurrentProgram.EndDate.AddHours(EpgOffset) - DateTime.Now).TotalMilliseconds
-                    };
-                }
-            }
+            List<EmbySessions.Class1> sessions = Newtonsoft.Json.JsonConvert.DeserializeObject<List<EmbySessions.Class1>>(response.Content);
+            if (sessions is null) throw new Exception("Sessions could not be retrieved!");
+            return sessions;
         }
-
-        return new ActivityObject()
-        {
-            Description = "",
-            Logo = "",
-            Title = "",
-            IsPaused = false
-        };
+        throw new Exception("Sessions could not be retrieved!");
     }
 }

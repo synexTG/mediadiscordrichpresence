@@ -4,40 +4,29 @@ using Plex.Api.Factories;
 using Plex.ServerApi.Clients.Interfaces;
 using Plex.ServerApi.PlexModels.Server.Sessions;
 using Plex.ServerApi.PlexModels.Media;
+using MediaDiscordRichPresence.Models;
 
 namespace MediaDiscordRichPresence;
 public class PlexProvider : IProvider
 {
-    public ActivityObject activityObject { get; set; } = new ActivityObject();
-    public IPlexFactory plexFactory;
-    public IPlexServerClient plexServerClient;
-
-    public string ProfileName { get; set; }
-    public string AuthToken { get; set; }
-    public string Url { get; set; }
-    public PlexProvider(string pUrl, string pProfileName,string pAuthToken, ServiceProvider sServiceProvider)
+    private ActivityObject CurrentActivityObject { get; set; } = new ActivityObject();
+    private IPlexServerClient plexServerClient;
+    private Config Config { get; set; }
+    public PlexProvider(Config pConfig, ServiceProvider pServiceProvider)
     {
-        //Init connection
-        plexFactory = sServiceProvider.GetService<IPlexFactory>();
-        plexServerClient = sServiceProvider.GetService<IPlexServerClient>();
+        plexServerClient = pServiceProvider.GetService<IPlexServerClient>();
 
-        var sessions = plexServerClient.GetSessionsAsync(pAuthToken, pUrl).Result;
-
-        ProfileName = pProfileName;
-        AuthToken = pAuthToken;
-        Url = pUrl;
-
-        Console.WriteLine("Plex connection successfully initialized.");
+        Config = pConfig;
     }
 
     public bool IsCurrentlyPlaying()
     {
-        var sessions = plexServerClient.GetSessionsAsync(AuthToken, Url).Result;
+        var sessions = plexServerClient.GetSessionsAsync(Config.Plex.AuthToken, Config.Plex.Url).Result;
         if (sessions.Metadata is null) return false;
 
         foreach (SessionMetadata session in sessions.Metadata)
         {
-            if (session.User.Title.Equals(ProfileName))
+            if (session.User.Title.Equals(Config.Plex.ProfileName))
             {
                 return true;
             }
@@ -47,174 +36,155 @@ public class PlexProvider : IProvider
 
     public void SetRichPresence(DiscordRpcClient client)
     {
-        //GetNewValues
-        ActivityObject newActivityObject = GetActivityObject();
-        if(newActivityObject is null)
-        {
-            if(client.CurrentPresence is not null) client.ClearPresence();
-            return;
-        }
-        if (newActivityObject.Title == activityObject.Title && newActivityObject.Logo == activityObject.Logo && newActivityObject.Description == activityObject.Description && newActivityObject.IsPaused == activityObject.IsPaused)
-        {
-            return;
-        }
-        activityObject = newActivityObject;
+        ActivityObject ActivityObject = GetActivityObject();
 
-        string largeImageText = "Unknown";
-        if (IsMovie())
+        if (ActivityObject.Title == CurrentActivityObject.Title 
+            && ActivityObject.Logo == CurrentActivityObject.Logo 
+            && ActivityObject.Description == CurrentActivityObject.Description 
+            && ActivityObject.IsPaused == CurrentActivityObject.IsPaused) return;
+
+        CurrentActivityObject = ActivityObject;
+
+        //Setting Tooltip for the large Image
+        string largeImageText = Config.RichPresence.WatchingUnknown;
+        switch (GetActivityType())
         {
-            largeImageText = "Watching a movie";
+            case ActivityType.LiveTV:
+                largeImageText = Config.RichPresence.WatchingTV;
+                break;
+            case ActivityType.Movie:
+                largeImageText = Config.RichPresence.WatchingMovie;
+                break;
+            case ActivityType.Show:
+                largeImageText = Config.RichPresence.WatchingShow;
+                break;
+            default:
+                break;
         }
-        if (IsShow())
+
+        //Setting TimeStamp
+        Timestamps timestamps = Timestamps.Now;
+        if (Config.RichPresence.ShowTimeLeftIfPossible)
         {
-            largeImageText = "Watching a show";
+            timestamps = CurrentActivityObject.DurationLeft != 0 ? Timestamps.FromTimeSpan(TimeSpan.FromMilliseconds(CurrentActivityObject.DurationLeft)) : Timestamps.Now;
         }
 
         client.SetPresence(new RichPresence()
         {
-            Timestamps = activityObject.DurationLeft != 0 ? Timestamps.FromTimeSpan(TimeSpan.FromMilliseconds(activityObject.DurationLeft)) : Timestamps.Now,
-            Details = "Plex: " + activityObject.Title,
-            State = activityObject.Description,
+            Timestamps = timestamps,
+            Details = "Plex: " + CurrentActivityObject.Title,
+            State = CurrentActivityObject.Description,
             Assets = new Assets()
             {
-                LargeImageKey = activityObject.Logo,
+                LargeImageKey = CurrentActivityObject.Logo,
                 LargeImageText = largeImageText,
-                SmallImageKey = activityObject.IsPaused ? "https://i.imgur.com/VomKC7b.png" : "https://i.imgur.com/cK2Tn8l.png",
-                SmallImageText = activityObject.IsPaused ? "Paused" : "Playing"
+                SmallImageKey = CurrentActivityObject.IsPaused ? Config.ImageTemplateLinks.Paused : Config.ImageTemplateLinks.Playing,
+                SmallImageText = CurrentActivityObject.IsPaused ? Config.RichPresence.Paused : Config.RichPresence.Playing
             }
         });
     }
 
-    private bool IsShow()
+    private ActivityType GetActivityType()
     {
-        var sessions = plexServerClient.GetSessionsAsync(AuthToken, Url).Result;
+        var sessions = plexServerClient.GetSessionsAsync(Config.Plex.AuthToken, Config.Plex.Url).Result;
         foreach (SessionMetadata session in sessions.Metadata)
         {
-            if (session.User.Title.Equals(ProfileName))
+            if (session.User.Title.Equals(Config.Plex.ProfileName))
             {
-                if (session.Type == "episode") return true;
-                break;
+                if (session.Type is null) return ActivityType.None;
+                switch(session.Type)
+                {
+                    case "movie":
+                        return ActivityType.Movie;
+                    case "episode":
+                        return ActivityType.Show;
+                }
             }
         }
-        return false;
-    }
 
-    private bool IsMovie()
-    {
-        var sessions = plexServerClient.GetSessionsAsync(AuthToken, Url).Result;
-        foreach (SessionMetadata session in sessions.Metadata)
-        {
-            if (session.User.Title.Equals(ProfileName))
-            {
-                if (session.Type == "movie") return true;
-                break;
-            }
-        }
-        return false;
+        return ActivityType.None;
     }
 
     private ActivityObject GetActivityObject()
     {
         SessionMetadata selectedSession = null;
-        var sessions = plexServerClient.GetSessionsAsync(AuthToken, Url).Result;
-        if (sessions.Metadata is null) return null;
+        var sessions = plexServerClient.GetSessionsAsync(Config.Plex.AuthToken, Config.Plex.Url).Result;
 
         foreach (SessionMetadata session in sessions.Metadata)
         {
-            if (session.User.Title.Equals(ProfileName))
+            if (session.User.Title.Equals(Config.Plex.ProfileName))
             {
                 selectedSession = session;
                 break;
             }
         }
-        if (selectedSession is null) return null;
 
-        if (IsShow())
+        switch (GetActivityType())
         {
-            TimeSpan duration = TimeSpan.FromMilliseconds(selectedSession.Duration);
-            string index = "S";
-            if (selectedSession.ParentIndex.ToString().Length == 1)
-            {
-                index += "0" + selectedSession.ParentIndex.ToString();
-            }
-            else
-            {
-                index += selectedSession.ParentIndex.ToString();
-            }
-            index += "E";
+            case ActivityType.Show:
 
-            if (selectedSession.Index.ToString().Length == 1)
-            {
-                index += "0" + selectedSession.Index.ToString();
-            }
-            else
-            {
-                index += selectedSession.Index.ToString();
-            }
+                TimeSpan episodeDuration = TimeSpan.FromMilliseconds(selectedSession.Duration);
 
-            string durationStr = "";
-            if(duration.Hours > 0)
-            {
-                durationStr += duration.Hours + "h";
-            }
-            if(duration.Minutes > 0)
-            {
-                durationStr += duration.Minutes + "m";
-            }
-            if (duration.Seconds > 0)
-            {
-                durationStr += duration.Seconds + "s";
-            }
+                string activityObjectDescription = "";
+                if (episodeDuration.Days > 0) activityObjectDescription += episodeDuration.Days + "d";
+                if (episodeDuration.Hours > 0) activityObjectDescription += episodeDuration.Hours + "h";
+                if (episodeDuration.Minutes > 0) activityObjectDescription += episodeDuration.Minutes + "m";
+                if (episodeDuration.Seconds > 0) activityObjectDescription += episodeDuration.Seconds + "s";
 
-            return new ActivityObject()
-            {
-                Description = durationStr + " · " + index + " · " + selectedSession.Title,
-                Logo = Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + AuthToken,
-                Title = selectedSession.GrandparentTitle,
-                IsPaused = selectedSession.Player.State == "paused",
-                DurationLeft = selectedSession.Duration-selectedSession.ViewOffset
-            };
-        } else if(IsMovie())
-        {
-            TimeSpan duration = TimeSpan.FromMilliseconds(selectedSession.Duration);
-            
-            string durationStr = "";
-            if (duration.Hours > 0)
-            {
-                durationStr += duration.Hours + "h";
-            }
-            if (duration.Minutes > 0)
-            {
-                durationStr += duration.Minutes + "m";
-            }
-            if (duration.Seconds > 0)
-            {
-                durationStr += duration.Seconds + "s";
-            }
+                activityObjectDescription += " · S";
+                if (selectedSession.ParentIndex.ToString().Length == 1)
+                {
+                    activityObjectDescription += "0" + selectedSession.ParentIndex.ToString();
+                }
+                else
+                {
+                    activityObjectDescription += selectedSession.ParentIndex.ToString();
+                }
+                activityObjectDescription += "E";
 
-            string genreStr = "";
-            foreach(Genre genre in selectedSession.Genres) {
-                if (genreStr != "") genreStr += ", ";
-                genreStr += genre.Tag;
-            }
+                if (selectedSession.Index.ToString().Length == 1)
+                {
+                    activityObjectDescription += "0" + selectedSession.Index.ToString();
+                }
+                else
+                {
+                    activityObjectDescription += selectedSession.Index.ToString();
+                }
+                activityObjectDescription += selectedSession.Title;
 
-            return new ActivityObject()
-            {
-                Description = durationStr + " · Genre: " + genreStr,
-                Logo = Url + selectedSession.Thumb + "?X-Plex-Token=" + AuthToken,
-                Title = selectedSession.Title + " (" + selectedSession.Year.ToString() + ")",
-                IsPaused = selectedSession.Player.State == "paused",
-                DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
-            };
+
+                return new ActivityObject()
+                {
+                    Description = activityObjectDescription,
+                    Logo = Config.Plex.Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Title = selectedSession.GrandparentTitle,
+                    IsPaused = selectedSession.Player.State == "paused",
+                    DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
+                };
+            case ActivityType.Movie:
+                TimeSpan movieDuration = TimeSpan.FromMilliseconds(selectedSession.Duration);
+
+                string movieDurationStr = "";
+                if (movieDuration.Hours > 0) movieDurationStr += movieDuration.Hours + "h";
+                if (movieDuration.Minutes > 0) movieDurationStr += movieDuration.Minutes + "m";
+                if (movieDuration.Seconds > 0) movieDurationStr += movieDuration.Seconds + "s";
+
+                string genreStr = "";
+                foreach (Genre genre in selectedSession.Genres)
+                {
+                    if (genreStr != "") genreStr += ", ";
+                    genreStr += genre.Tag;
+                }
+
+                return new ActivityObject()
+                {
+                    Description = movieDurationStr + " · Genre: " + genreStr,
+                    Logo = Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Title = selectedSession.Title + " (" + selectedSession.Year.ToString() + ")",
+                    IsPaused = selectedSession.Player.State == "paused",
+                    DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
+                };
         }
-
-
-        return new ActivityObject()
-        {
-            Description = "",
-            Logo = "",
-            Title = "",
-            IsPaused = false
-        };
+        throw new Exception("Something went wrong on getting the current activity of plex");
     }
 }

@@ -1,16 +1,30 @@
 {
+  "RichPresence": {
+    "ShowTimeLeftIfPossible": true, //If true it will try to show how much time of the playback is left, if false it will show how long the current rich presence is set
+    "RefreshIntervalInSeconds": 3,
+    "PriorityMode": 0, //0 = Plex first, than Emby | 1 = Emby first, than Plex
+    "WatchingTV": "Watching TV",
+    "WatchingMovie": "Watching a movie",
+    "WatchingShow": "Watching a show",
+    "WatchingUnknown": "Watching something"
+  },
+  "Discord": {
+    "ApplicationId": "DiscordApplicationId"
+  },
   "Plex": {
     "Enabled": true,
-    "PlexUrl": "http://plex.exmaple.com:32400",
-    "PlexProfileName": "UsedProfileName",
-    "PlexAuthToken": "PlexAuthToken"
+    "Url": "http://plex.exmaple.com:32400",
+    "ProfileName": "UsedProfileName",
+    "AuthToken": "PlexAuthToken",
+    "HiddenLibraries": []
   },
   "Emby": {
     "Enabled": true,
-    "EmbyUrl": "http://emby.example.com:8096",
-    "EmbyProfileName": "UsedProfileName",
-    "EmbyEpgHourOffset": 2, //EpgOffset
-    "EmbyApiKey": "EmbyApiKey"
+    "Url": "http://emby.example.com:8096",
+    "ProfileName": "UsedProfileName",
+    "EpgHourOffset": 2, //EpgOffset
+    "ApiKey": "EmbyApiKey",
+    "HiddenLibraries": []
   },
   "Images": {
     //Set both false to disable images and display the image of the provider
@@ -19,12 +33,9 @@
     "ImgurApiKey": "ImgurApiKey"
   },
   "ImageTemplateLinks": {
-    "Playing": "",
-    "Paused": "",
+    "Playing": "https://i.imgur.com/cK2Tn8l.png",
+    "Paused": "https://i.imgur.com/VomKC7b.png",
     "Plex": "",
     "Emby": ""
-  },
-  "RichPresence": {
-    "ShowTimeElapsed": false //Set on true if you want to show how much time is left for the current playback
   }
 }
