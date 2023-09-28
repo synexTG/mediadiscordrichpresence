@@ -16,7 +16,7 @@ A windows application which shares your plex and/or emby activity on discord!
 > All implementations will show the remaining time of your current playback and also if your playback is paused or not.
 > The Logo of the show, movie or live tv channel will also be shown in your discord activity.
 
-The dev branch currently only supports movies and shows for Plex and Live TV for Emby. More is coming soon and when all is included there will be a release (+ tutorial)
+The dev branch currently only supports movies and shows for Plex and Emby. For Emby it also supports Live TV. More is coming soon and when all is included there will be a release (+ tutorial)
 
 Example Config:
 ```json
