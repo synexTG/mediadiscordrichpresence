@@ -204,7 +204,7 @@ public class PlexProvider : IProvider
     public string GetCorrectImageUrl(string pUrl)
     {
         if (Config.Images.UseProviderImageLinks) return pUrl;
-        if (Config.Images.UseImgur) return ImgurUploader.UploadImage(pUrl, Config.Images.ImgurClientId).data.link;
+        if (Config.Images.UseImgur) return ImgurUploader.UploadImage(pUrl, Config.Images.ImgurClientId, Config, "plex");
         return Config.ImageTemplateLinks.Plex;
     }
 }

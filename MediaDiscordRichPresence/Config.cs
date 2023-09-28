@@ -50,6 +50,7 @@ public class sEmby
 public class sImgages
 {
     public bool UseProviderImageLinks { get; set; }
+    public bool UseProviderImageLinksAsFallback { get; set; }
     public bool UseImgur { get; set; }
     public string ImgurClientId { get; set; }
 }

@@ -21,6 +21,7 @@ public class EmbyProvider : IProvider
         {
             if(c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
             {
+                if (Config.Emby.HiddenLibraries.Contains(GetLibraryNameByPath(c.NowPlayingItem.Path))) return false;
                 return true;
             }
         }
@@ -209,7 +210,27 @@ public class EmbyProvider : IProvider
     public string GetCorrectImageUrl(string pUrl)
     {
         if (Config.Images.UseProviderImageLinks) return pUrl;
-        if (Config.Images.UseImgur) return ImgurUploader.UploadImage(pUrl, Config.Images.ImgurClientId).data.link;
+        if (Config.Images.UseImgur) return ImgurUploader.UploadImage(pUrl, Config.Images.ImgurClientId, Config, "emby");
         return Config.ImageTemplateLinks.Emby;
+    }
+
+    public string GetLibraryNameByPath(string pPath)
+    {
+        var options = new RestClientOptions("https://emby.synex.dev:2017")
+        {
+            MaxTimeout = -1,
+        };
+        var client = new RestClient(options);
+        var request = new RestRequest("/emby/Library/SelectableMediaFolders?api_key=db37ca54bbc842e6a81ddd6eb6cfa79e", Method.Get);
+        RestResponse response = client.Execute(request);
+        List<EmbyLibraryMediaFolders.Class1> folders = Newtonsoft.Json.JsonConvert.DeserializeObject<List<EmbyLibraryMediaFolders.Class1>>(response.Content);
+        foreach(EmbyLibraryMediaFolders.Class1 folder in folders)
+        {
+            foreach(EmbyLibraryMediaFolders.Subfolder subfolder in folder.SubFolders)
+            {
+                if (pPath.Contains(subfolder.Path)) return folder.Name;
+            }
+        }
+        return "Unknown";
     }
 }

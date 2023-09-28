@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MediaDiscordRichPresence;
 public class ImgurUploader
 {
-    public static ImgurUploadResponse.Rootobject UploadImage(string pImageUrl, string pImgurClientId)
+    public static string UploadImage(string pImageUrl, string pImgurClientId, Config pConfig, string pProvider)
     {
         using var httClient = new HttpClient();
         var imageBytes = httClient.GetByteArrayAsync(pImageUrl).Result;
@@ -26,6 +26,12 @@ public class ImgurUploader
         request.AddParameter("image", base64);
         request.AddParameter("type", "base64");
         RestResponse response = client.Execute(request);
-        return Newtonsoft.Json.JsonConvert.DeserializeObject<ImgurUploadResponse.Rootobject>(response.Content);
+        if(!response.IsSuccessful)
+        {
+            if (pConfig.Images.UseProviderImageLinksAsFallback) return pImageUrl;
+            if (pProvider == "plex") return pConfig.ImageTemplateLinks.Plex;
+            if (pProvider == "emby") return pConfig.ImageTemplateLinks.Emby;
+        }
+        return Newtonsoft.Json.JsonConvert.DeserializeObject<ImgurUploadResponse.Rootobject>(response.Content).data.link;
     }
 }
