@@ -54,8 +54,9 @@ Example Config:
   "Images": {
     //Set both false to disable images and display the image of the provider
     "UseProviderImageLinks": false, //If true the program will use the direct links from plex or emby, could make problems with authentication and security -> It is not recommended
+    "UseProviderImageLinksAsFallback": true, //If false only the provider logos will be shown when imgur does not work (Rate Limitation or Downtime)
     "UseImgur": true,
-    "ImgurApiKey": "ImgurApiKey"
+    "ImgurClientId": "ImgurApiKey"
   },
   "ImageTemplateLinks": {
     "Playing": "https://i.imgur.com/cK2Tn8l.png",
