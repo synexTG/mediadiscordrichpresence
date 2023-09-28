@@ -28,6 +28,7 @@ public class PlexProvider : IProvider
         {
             if (session.User.Title.Equals(Config.Plex.ProfileName))
             {
+                if (Config.Plex.HiddenLibraries.Contains(session.LibrarySectionTitle)) return false;
                 return true;
             }
         }
@@ -90,7 +91,7 @@ public class PlexProvider : IProvider
             (Config.RichPresence.ShowTimeLeftIfPossible && ((CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) > 10000 ||
             (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) < -10000))))
         {
-            if (CurrentActivityObject.IsPaused) updatedRichPresence.Timestamps = null;
+            if (CurrentActivityObject.IsPaused && Config.RichPresence.ShowTimeLeftIfPossible) updatedRichPresence.Timestamps = null;
             client.SetPresence(updatedRichPresence);
         }
         SavedDurationLeft = CurrentActivityObject.DurationLeft;
