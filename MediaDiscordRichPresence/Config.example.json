@@ -30,6 +30,7 @@
     "HiddenLibraries": []
   },
   "Images": {
+    "DisablePosters": true,
     //Set both false to disable images and display the image of the provider
     "UseProviderImageLinks": false, //If true the program will use the direct links from plex or emby, could make problems with authentication and security -> It is not recommended
     "UseImgur": true,
@@ -38,7 +39,7 @@
   "ImageTemplateLinks": {
     "Playing": "https://i.imgur.com/cK2Tn8l.png",
     "Paused": "https://i.imgur.com/VomKC7b.png",
-    "Plex": "",
-    "Emby": ""
+    "Plex": "https://i.imgur.com/Zji9d94.png", //Will be used as the rich presence logo if DisablePosters is true
+    "Emby": "https://i.imgur.com/vLQYhPk.png" //Will be used as the rich presence logo if DisablePosters is true
   }
 }

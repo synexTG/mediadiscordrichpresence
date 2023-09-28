@@ -108,7 +108,7 @@ public class EmbyProvider : IProvider
                 return new ActivityObject()
                 {
                     Description = "Program: " + c.NowPlayingItem.CurrentProgram.Name,
-                    Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9",
+                    Logo = Config.Images.DisablePosters ? Config.ImageTemplateLinks.Emby : Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9",
                     Title = c.NowPlayingItem.CurrentProgram.ChannelName,
                     IsPaused = c.PlayState.IsPaused,
                     DurationLeft = (long) (c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
