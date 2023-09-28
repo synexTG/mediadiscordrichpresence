@@ -1,0 +1,30 @@
+{
+  "Plex": {
+    "Enabled": true,
+    "PlexUrl": "http://plex.exmaple.com:32400",
+    "PlexProfileName": "UsedProfileName",
+    "PlexAuthToken": "PlexAuthToken"
+  },
+  "Emby": {
+    "Enabled": true,
+    "EmbyUrl": "http://emby.example.com:8096",
+    "EmbyProfileName": "UsedProfileName",
+    "EmbyEpgHourOffset": 2, //EpgOffset
+    "EmbyApiKey": "EmbyApiKey"
+  },
+  "Images": {
+    //Set both false to disable images and display the image of the provider
+    "UseProviderImageLinks": false, //If true the program will use the direct links from plex or emby, could make problems with authentication and security -> It is not recommended
+    "UseImgur": true,
+    "ImgurApiKey": "ImgurApiKey"
+  },
+  "ImageTemplateLinks": {
+    "Playing": "",
+    "Paused": "",
+    "Plex": "",
+    "Emby": ""
+  },
+  "RichPresence": {
+    "ShowTimeElapsed": false //Set on true if you want to show how much time is left for the current playback
+  }
+}

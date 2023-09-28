@@ -45,8 +45,8 @@ services.AddTransient<IPlexRequestsHttpClient, PlexRequestsHttpClient>();
 var sp = services.BuildServiceProvider();
 
 Console.WriteLine("Initialize providers");
-PlexProvider plex = new PlexProvider(config.PlexUrl, config.PlexProfileName, config.PlexAuthToken, sp);
-EmbyProvider emby = new EmbyProvider(config.EmbyUrl, config.EmbyApiKey, config.EmbyProfileName, config.EmbyEpgHourOffset);
+PlexProvider plex = new PlexProvider(config.Plex.PlexUrl, config.Plex.PlexProfileName, config.Plex.PlexAuthToken, sp);
+EmbyProvider emby = new EmbyProvider(config.Emby.EmbyUrl, config.Emby.EmbyApiKey, config.Emby.EmbyProfileName, config.Emby.EmbyEpgHourOffset);
 Console.WriteLine("Initialize discord rich presence client");
 async Task InitializeAsync()
 {
