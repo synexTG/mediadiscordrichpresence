@@ -18,7 +18,6 @@ High configurable .NET 6 application which shares your activity from plex and/or
 
 The dev branch currently only supports movies and shows for Plex and Emby. For Emby it also supports Live TV. More is coming soon and when all is included there will be a release (+ tutorial)
 ## To-Do
-- Add Plex Live TV support
 - Check possibility to add Recordings, Music and audiobooks
 - Add the possibility to remove the Provider prefix in the rich presence
 - add the possibility to disable certain activity types from being shared
@@ -27,8 +26,8 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Add an option to disable rich presence between certain hours
 - Add tray icon with a possible configuration window
 - Add show and hide console to the tray menu (default will be hidden)
-- Add a json database which saves already to imgur uploaded file links to avoid unnecessary image uploads
 - Bug fix: If there are more than two sessions for the user prioritize the playing one
+- Add upload date to image data store and remove all links older than 30 days on startup -> saves disk space and avoids possible 404 errors from deletions by imgur
 
 ## Example Config
 ```json
