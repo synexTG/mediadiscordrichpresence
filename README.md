@@ -25,6 +25,8 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Better documentation with installation guide and all relevant information
 - Add a ready to launch executable as a release
 - Add an option to disable rich presence between certain hours
+- Add tray icon with a possible configuration window
+- Add show and hide console to the tray menu (default will be hidden)
 
 ## Example Config
 ```json
