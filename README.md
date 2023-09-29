@@ -28,7 +28,7 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Add tray icon with a possible configuration window
 - Add show and hide console to the tray menu (default will be hidden)
 - Add a json database which saves already to imgur uploaded file links to avoid unnecessary image uploads
-- Bug fix: If there are more than two sessions for the user prioritize the playing oen
+- Bug fix: If there are more than two sessions for the user prioritize the playing one
 
 ## Example Config
 ```json
