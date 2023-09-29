@@ -28,6 +28,7 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Add show and hide console to the tray menu (default will be hidden)
 - Bug fix: If there are more than two sessions for the user prioritize the playing one
 - Add upload date to image data store and remove all links older than 30 days on startup -> saves disk space and avoids possible 404 errors from deletions by imgur
+- Remove any url parameters (api key) in the image store file
 
 ## Example Config
 ```json
