@@ -1,6 +1,6 @@
 # MediaRichPresence
 
-.NET 6 application which shares your activity from plex and/or emby in discord!
+High configurable .NET 6 application which shares your activity from plex and/or emby in discord!
 
 ## Features
 
