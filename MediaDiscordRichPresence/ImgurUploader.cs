@@ -18,6 +18,15 @@ public class ImgurUploader
                 if (pProvider == "plex") return pConfig.ImageTemplateLinks.Plex;
                 if (pProvider == "emby") return pConfig.ImageTemplateLinks.Emby;
             }
+            Dictionary<string, string> Images = ImageStore.GetImages();
+            if (Images.ContainsKey(pImageUrl!))
+            {
+                string imgurLink;
+                if(Images.TryGetValue(pImageUrl!, out imgurLink!)) return imgurLink;
+                if (pProvider == "plex") return pConfig.ImageTemplateLinks.Plex;
+                if (pProvider == "emby") return pConfig.ImageTemplateLinks.Emby;
+            }
+
             using var httClient = new HttpClient();
             var imageBytes = httClient.GetByteArrayAsync(pImageUrl).Result;
             string base64 = Convert.ToBase64String(imageBytes);
@@ -39,7 +48,7 @@ public class ImgurUploader
                 if (pProvider == "plex") return pConfig.ImageTemplateLinks.Plex;
                 if (pProvider == "emby") return pConfig.ImageTemplateLinks.Emby;
             }
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<ImgurUploadResponse.Rootobject>(response.Content).data.link;
+            return ImageStore.AddImage(pImageUrl, Newtonsoft.Json.JsonConvert.DeserializeObject<ImgurUploadResponse.Rootobject>(response.Content).data.link);
         } catch(Exception ex)
         {
             Console.WriteLine("Image could not be uploaded: " + ex.ToString());

@@ -175,15 +175,9 @@ public class PlexProvider : IProvider
                     Console.WriteLine("Plex Live TV Channel information could not be loaded: " + ex.ToString());
                 }
 
-                //Check available dvrs - https://plex.synex.dev:2018/livetv/dvrs - header X-Plex-Token
-                //Check foreach dvr the xmltv - https://plex.synex.dev:2018/EPGIdentifier of dvr/grid?type=1
-                //Check each xmltv for each dvr for program identifier - guid: tv.plex.xmltv://movie/Frauentausch
-                //Check each found program if it is running in this moment - beginsAt endsAt // Unix timestamps 
-                //If yes take Channel Name, Logo and Duration left / channelCallSign - channelThumb - endsAt 
-
                 return new ActivityObject()
                 {
-                    Description = "Program: " + selectedSession.Title,
+                    Description = "",
                     Logo = Config.ImageTemplateLinks.Plex,
                     Title = "",
                     IsPaused = selectedSession.Player.State == "paused",
