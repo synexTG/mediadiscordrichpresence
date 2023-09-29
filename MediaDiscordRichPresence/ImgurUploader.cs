@@ -1,10 +1,5 @@
 ﻿using MediaDiscordRichPresence.Models;
 using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediaDiscordRichPresence;
 public class ImgurUploader
@@ -51,7 +46,7 @@ public class ImgurUploader
             return ImageStore.AddImage(pImageUrl, Newtonsoft.Json.JsonConvert.DeserializeObject<ImgurUploadResponse.Rootobject>(response.Content).data.link);
         } catch(Exception ex)
         {
-            Console.WriteLine("Image could not be uploaded: " + ex.ToString());
+            //Console.WriteLine("Image could not be uploaded: " + ex.ToString());
             if (pProvider == "plex") return pConfig.ImageTemplateLinks.Plex;
             if (pProvider == "emby") return pConfig.ImageTemplateLinks.Emby;
             return "";

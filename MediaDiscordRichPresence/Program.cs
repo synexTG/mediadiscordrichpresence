@@ -2,13 +2,6 @@
 using DiscordRPC;
 using MediaDiscordRichPresence;
 using Newtonsoft.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Plex.Api.Factories;
-using Plex.Library.Factories;
-using Plex.ServerApi.Api;
-using Plex.ServerApi.Clients.Interfaces;
-using Plex.ServerApi.Clients;
-using Plex.ServerApi;
 
 Console.WriteLine("Starting rich presence application");
 Console.WriteLine("Getting config...");
@@ -17,7 +10,8 @@ try
 {
     config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("Config.json"));
     if (config is null) throw new Exception("Config is null: Check if Config.json exists and is filled out correctly!");
-} catch(Exception e)
+}
+catch (Exception e)
 {
     Console.WriteLine("Config could not be loaded: " + e.ToString());
     Environment.Exit(1);
@@ -44,7 +38,8 @@ async Task InitializeAsync()
     var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(config.RichPresence.RefreshIntervalInSeconds));
     while (await periodicTimer.WaitForNextTickAsync())
     {
-        try {
+        try
+        {
             if (config.RichPresence.RefreshConfigOnEveryCheck)
             {
                 config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("Config.json"));
@@ -55,7 +50,8 @@ async Task InitializeAsync()
             switch (config.RichPresence.PriorityMode)
             {
                 case 0:
-                    if (config.Plex.Enabled && plex.IsCurrentlyPlaying()) {
+                    if (config.Plex.Enabled && plex.IsCurrentlyPlaying())
+                    {
                         plex.SetRichPresence(client);
                         break;
                     }
@@ -80,7 +76,8 @@ async Task InitializeAsync()
                     client.ClearPresence();
                     break;
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             client.ClearPresence();
             Console.WriteLine("An error occurred on setting the rich presence, will retry in the next interval");

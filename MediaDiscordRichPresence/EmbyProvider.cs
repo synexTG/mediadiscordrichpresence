@@ -1,7 +1,6 @@
 ﻿using DiscordRPC;
 using MediaDiscordRichPresence.EmbyModels;
 using MediaDiscordRichPresence.Models;
-using Plex.ServerApi.PlexModels.Media;
 using RestSharp;
 
 namespace MediaDiscordRichPresence;

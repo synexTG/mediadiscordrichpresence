@@ -1,14 +1,10 @@
 ﻿using DiscordRPC;
 using Microsoft.Extensions.DependencyInjection;
-using Plex.Api.Factories;
 using Plex.ServerApi.Clients.Interfaces;
 using Plex.ServerApi.PlexModels.Server.Sessions;
 using Plex.ServerApi.PlexModels.Media;
 using MediaDiscordRichPresence.Models;
 using RestSharp;
-using System.Xml.Linq;
-using System.Xml.Serialization;
-using System.Data;
 
 namespace MediaDiscordRichPresence;
 public class PlexProvider : IProvider
@@ -172,7 +168,7 @@ public class PlexProvider : IProvider
                     }
                 } catch(Exception ex)
                 {
-                    Console.WriteLine("Plex Live TV Channel information could not be loaded: " + ex.ToString());
+                    //Console.WriteLine("Plex Live TV Channel information could not be loaded: " + ex.ToString());
                 }
 
                 return new ActivityObject()
