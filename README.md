@@ -27,6 +27,7 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - Add an option to disable rich presence between certain hours
 - Add tray icon with a possible configuration window
 - Add show and hide console to the tray menu (default will be hidden)
+- Add a json database which saves already to imgur uploaded file links to avoid unnecessary image uploads
 
 ## Example Config
 ```json
