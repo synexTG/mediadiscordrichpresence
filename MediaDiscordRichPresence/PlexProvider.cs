@@ -185,13 +185,21 @@ public class PlexProvider : IProvider
                 };
             case ActivityType.Show:
 
-                TimeSpan episodeDuration = TimeSpan.FromMilliseconds(selectedSession.Duration);
+                long episodeDuration = selectedSession.Duration;
+                if (selectedSession.Media is not null)
+                {
+                    foreach (var media in selectedSession.Media)
+                    {
+                        if (media.Selected) episodeDuration = media.Duration;
+                    }
+                }
+                TimeSpan episodeDurationTs = TimeSpan.FromMilliseconds(episodeDuration);
 
                 string activityObjectDescription = "";
-                if (episodeDuration.Days > 0) activityObjectDescription += episodeDuration.Days + "d";
-                if (episodeDuration.Hours > 0) activityObjectDescription += episodeDuration.Hours + "h";
-                if (episodeDuration.Minutes > 0) activityObjectDescription += episodeDuration.Minutes + "m";
-                if (episodeDuration.Seconds > 0) activityObjectDescription += episodeDuration.Seconds + "s";
+                if (episodeDurationTs.Days > 0) activityObjectDescription += episodeDurationTs.Days + "d";
+                if (episodeDurationTs.Hours > 0) activityObjectDescription += episodeDurationTs.Hours + "h";
+                if (episodeDurationTs.Minutes > 0) activityObjectDescription += episodeDurationTs.Minutes + "m";
+                if (episodeDurationTs.Seconds > 0) activityObjectDescription += episodeDurationTs.Seconds + "s";
 
                 activityObjectDescription += " · S";
                 if (selectedSession.ParentIndex.ToString().Length == 1)
@@ -221,30 +229,41 @@ public class PlexProvider : IProvider
                     Logo = Config.Plex.Url + selectedSession.GrandparentThumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
                     Title = selectedSession.GrandparentTitle,
                     IsPaused = selectedSession.Player.State == "paused",
-                    DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
+                    DurationLeft = episodeDuration - selectedSession.ViewOffset
                 };
             case ActivityType.Movie:
-                TimeSpan movieDuration = TimeSpan.FromMilliseconds(selectedSession.Duration);
+                long movieDuration = selectedSession.Duration;
+                if(selectedSession.Media is not null)
+                {
+                    foreach(var media in selectedSession.Media)
+                    {
+                        if(media.Selected) movieDuration = media.Duration;
+                    }
+                }
+                TimeSpan movieDurationTs = TimeSpan.FromMilliseconds(movieDuration);
 
                 string movieDurationStr = "";
-                if (movieDuration.Hours > 0) movieDurationStr += movieDuration.Hours + "h";
-                if (movieDuration.Minutes > 0) movieDurationStr += movieDuration.Minutes + "m";
-                if (movieDuration.Seconds > 0) movieDurationStr += movieDuration.Seconds + "s";
+                if (movieDurationTs.Hours > 0) movieDurationStr += movieDurationTs.Hours + "h";
+                if (movieDurationTs.Minutes > 0) movieDurationStr += movieDurationTs.Minutes + "m";
+                if (movieDurationTs.Seconds > 0) movieDurationStr += movieDurationTs.Seconds + "s";
 
                 string genreStr = "";
-                foreach (Genre genre in selectedSession.Genres)
+                if (selectedSession.Genres is not null)
                 {
-                    if (genreStr != "") genreStr += ", ";
-                    genreStr += genre.Tag;
+                    foreach (Genre genre in selectedSession.Genres)
+                    {
+                        if (genreStr != "") genreStr += ", ";
+                        genreStr += genre.Tag;
+                    }
                 }
 
                 return new ActivityObject()
                 {
-                    Description = movieDurationStr + " · Genre: " + genreStr,
+                    Description = selectedSession.Genres is not null ? movieDurationStr + " · Genre: " + genreStr : movieDurationStr,
                     Logo = Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
-                    Title = selectedSession.Title + " (" + selectedSession.Year.ToString() + ")",
+                    Title = selectedSession.Year != 0 ? selectedSession.Title + " (" + selectedSession.Year.ToString() + ")" : selectedSession.Title,
                     IsPaused = selectedSession.Player.State == "paused",
-                    DurationLeft = selectedSession.Duration - selectedSession.ViewOffset
+                    DurationLeft = movieDuration - selectedSession.ViewOffset
                 };
         }
         throw new Exception("Something went wrong on getting the current activity of plex");
