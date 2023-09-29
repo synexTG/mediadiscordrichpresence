@@ -24,7 +24,7 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
 - add the possibility to disable certain activity types from being shared
 - Better documentation with installation guide and all relevant information
 - Add a ready to launch executable as a release
-- Add an option to disable rich presence betweem certain hours
+- Add an option to disable rich presence between certain hours
 
 ## Example Config
 ```json
