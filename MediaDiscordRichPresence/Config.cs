@@ -33,6 +33,7 @@ public class sPlex
     public bool Enabled { get; set; }
     public string Url { get; set; }
     public string ProfileName { get; set; }
+    public int EpgHourOffset { get; set; }
     public string AuthToken { get; set; }
     public List<string> HiddenLibraries { get; set; }
 }

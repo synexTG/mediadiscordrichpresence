@@ -21,7 +21,7 @@ public class EmbyProvider : IProvider
         {
             if(c.PlayState.CanSeek && c.UserName == Config.Emby.ProfileName)
             {
-                if (Config.Emby.HiddenLibraries.Contains(GetLibraryNameByPath(c.NowPlayingItem.Path))) return false;
+                if (c.NowPlayingItem.Path is not null && Config.Emby.HiddenLibraries.Contains(GetLibraryNameByPath(c.NowPlayingItem.Path))) return false;
                 return true;
             }
         }
@@ -73,6 +73,7 @@ public class EmbyProvider : IProvider
         if (currentRichPresence is null)
         {
             if (CurrentActivityObject.IsPaused) updatedRichPresence.Timestamps = null;
+            updatedRichPresence.Assets.LargeImageKey = GetCorrectImageUrl(updatedRichPresence.Assets.LargeImageKey);
             client.SetPresence(updatedRichPresence);
         }
 
@@ -80,10 +81,11 @@ public class EmbyProvider : IProvider
             currentRichPresence.State != updatedRichPresence.State ||
             currentRichPresence.Assets.LargeImageText != updatedRichPresence.Assets.LargeImageText ||
             currentRichPresence.Assets.SmallImageText != updatedRichPresence.Assets.SmallImageText ||
-            (Config.RichPresence.ShowTimeLeftIfPossible && ((CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) > 10000 ||
-            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - 3000)) < -10000))))
+            (Config.RichPresence.ShowTimeLeftIfPossible && ((CurrentActivityObject.DurationLeft - (SavedDurationLeft - (Config.RichPresence.RefreshIntervalInSeconds * 1000))) > 10000 ||
+            (CurrentActivityObject.DurationLeft - (SavedDurationLeft - (Config.RichPresence.RefreshIntervalInSeconds*1000))) < -10000))))
         {
             if (CurrentActivityObject.IsPaused && Config.RichPresence.ShowTimeLeftIfPossible) updatedRichPresence.Timestamps = null;
+            updatedRichPresence.Assets.LargeImageKey = GetCorrectImageUrl(updatedRichPresence.Assets.LargeImageKey);
             client.SetPresence(updatedRichPresence);
         }
         SavedDurationLeft = CurrentActivityObject.DurationLeft;
@@ -114,11 +116,11 @@ public class EmbyProvider : IProvider
                     case ActivityType.LiveTV:
                         return new ActivityObject()
                         {
-                            Description = "Program: " + c.NowPlayingItem.CurrentProgram.Name,
-                            Logo = GetCorrectImageUrl(Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9"),
-                            Title = c.NowPlayingItem.CurrentProgram.ChannelName,
+                            Description = c.NowPlayingItem.CurrentProgram is null ? "" : "Program: " + c.NowPlayingItem.CurrentProgram.Name,
+                            Logo = c.NowPlayingItem.CurrentProgram is not null && c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag is not null ? Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.CurrentProgram.ParentId + "/Images/Primary?tag=" + c.NowPlayingItem.CurrentProgram.ChannelPrimaryImageTag + "&quality=9": Config.ImageTemplateLinks.Emby,
+                            Title = c.NowPlayingItem.Name,
                             IsPaused = c.PlayState.IsPaused,
-                            DurationLeft = (long)(c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
+                            DurationLeft = c.NowPlayingItem.CurrentProgram is null ? 0 : (long)(c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
                         };
                     case ActivityType.Movie:
                         TimeSpan movieDuration = TimeSpan.FromMilliseconds(c.NowPlayingItem.RunTimeTicks/10000);
@@ -138,7 +140,7 @@ public class EmbyProvider : IProvider
                         return new ActivityObject()
                         {
                             Description = movieDurationStr + " · Genre: " + genreStr,
-                            Logo = GetCorrectImageUrl(Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90"),
+                            Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
                             Title = c.NowPlayingItem.Name + " (" + c.NowPlayingItem.ProductionYear.ToString() + ")",
                             IsPaused = c.PlayState.IsPaused,
                             DurationLeft = (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks/10000)
@@ -178,7 +180,7 @@ public class EmbyProvider : IProvider
                         return new ActivityObject()
                         {
                             Description = activityObjectDescription,
-                            Logo = GetCorrectImageUrl(Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.SeriesId + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.SeriesPrimaryImageTag + "&quality=90"),
+                            Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.SeriesId + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.SeriesPrimaryImageTag + "&quality=90",
                             Title = c.NowPlayingItem.SeriesName,
                             IsPaused = c.PlayState.IsPaused,
                             DurationLeft = (c.NowPlayingItem.RunTimeTicks/10000) - (c.PlayState.PositionTicks/10000)
@@ -209,7 +211,7 @@ public class EmbyProvider : IProvider
 
     public string GetCorrectImageUrl(string pUrl)
     {
-        if (Config.Images.UseProviderImageLinks) return pUrl;
+        if (Config.Images.UseProviderImageLinks) return pUrl.StartsWith("https://") ? pUrl : Config.ImageTemplateLinks.Emby;
         if (Config.Images.UseImgur) return ImgurUploader.UploadImage(pUrl, Config.Images.ImgurClientId, Config, "emby");
         return Config.ImageTemplateLinks.Emby;
     }
@@ -221,7 +223,7 @@ public class EmbyProvider : IProvider
             MaxTimeout = -1,
         };
         var client = new RestClient(options);
-        var request = new RestRequest("/emby/Library/SelectableMediaFolders?api_key=db37ca54bbc842e6a81ddd6eb6cfa79e", Method.Get);
+        var request = new RestRequest("/emby/Library/SelectableMediaFolders?api_key=" + Config.Emby.ApiKey, Method.Get);
         RestResponse response = client.Execute(request);
         List<EmbyLibraryMediaFolders.Class1> folders = Newtonsoft.Json.JsonConvert.DeserializeObject<List<EmbyLibraryMediaFolders.Class1>>(response.Content);
         foreach(EmbyLibraryMediaFolders.Class1 folder in folders)
