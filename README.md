@@ -45,12 +45,13 @@ The dev branch currently only supports movies and shows for Plex and Emby. For E
     "Playing": "Playing" //Small icon tooltip
   },
   "Discord": {
-    "ApplicationId": "DiscordApplicationId"
+    "ApplicationId": "1156551061608353872" // Application name is "Plex & Emby" -> You can create your own application if you want another name
   },
   "Plex": {
     "Enabled": true,
-    "Url": "http://plex.exmaple.com:32400",
+    "Url": "http://plex.exmaple.com:32400", //Direct server link
     "ProfileName": "UsedProfileName",
+    "EpgHourOffset": 2, //EpgOffset
     "AuthToken": "PlexAuthToken",
     "HiddenLibraries": []
   },
