@@ -81,6 +81,8 @@ public class EmbySessions
         public string SeriesName { get; set; }
         public string SeriesId { get; set; }
         public string SeasonId { get; set; }
+        public string Status { get; set; }
+        public string ChannelName { get; set; }
         public float PrimaryImageAspectRatio { get; set; }
         public string SeriesPrimaryImageTag { get; set; }
         public string SeasonName { get; set; }

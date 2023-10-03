@@ -43,6 +43,9 @@ public class EmbyProvider : IProvider
             case ActivityType.Show:
                 largeImageText = Config.RichPresence.WatchingShow;
                 break;
+            case ActivityType.Recording:
+                largeImageText = Config.RichPresence.WatchingRecording;
+                break;
             default: 
                 break;
         }
@@ -99,6 +102,7 @@ public class EmbyProvider : IProvider
                 if(c.NowPlayingItem.Type == "TvChannel") return ActivityType.LiveTV;
                 if (c.NowPlayingItem.Type == "Episode") return ActivityType.Show;
                 if (c.NowPlayingItem.Type == "Movie") return ActivityType.Movie;
+                if (c.NowPlayingItem.Type == "Recording") return ActivityType.Recording;
             }
         }
         return ActivityType.None;
@@ -121,6 +125,28 @@ public class EmbyProvider : IProvider
                             IsPaused = c.PlayState.IsPaused,
                             DurationLeft = c.NowPlayingItem.CurrentProgram is null ? 0 : (long)(c.NowPlayingItem.CurrentProgram.EndDate.AddHours(Config.Emby.EpgHourOffset) - DateTime.Now).TotalMilliseconds
                         };
+                    case ActivityType.Recording:
+                        if(c.NowPlayingItem.Status == "InProgress")
+                        {
+                            return new ActivityObject()
+                            {
+                                Description = Config.RichPresence.RecordingFrom + " " + c.NowPlayingItem.ChannelName,
+                                Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
+                                Title = c.NowPlayingItem.Name,
+                                IsPaused = c.PlayState.IsPaused,
+                                DurationLeft = 0
+                            };
+                        } else
+                        {
+                            return new ActivityObject()
+                            {
+                                Description = Config.RichPresence.RecordingFrom + " " + c.NowPlayingItem.ChannelName,
+                                Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
+                                Title = c.NowPlayingItem.Name,
+                                IsPaused = c.PlayState.IsPaused,
+                                DurationLeft = (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks / 10000)
+                            };
+                        }
                     case ActivityType.Movie:
                         TimeSpan movieDuration = TimeSpan.FromMilliseconds(c.NowPlayingItem.RunTimeTicks/10000);
 
