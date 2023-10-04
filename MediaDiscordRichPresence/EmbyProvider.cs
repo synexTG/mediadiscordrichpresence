@@ -130,23 +130,14 @@ public class EmbyProvider : IProvider
                         {
                             return new ActivityObject()
                             {
-                                Description = Config.RichPresence.RecordingFrom + " " + c.NowPlayingItem.ChannelName,
+                                Description = Config.RichPresence.RecordingFrom + c.NowPlayingItem.ChannelName,
                                 Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
                                 Title = c.NowPlayingItem.Name,
                                 IsPaused = c.PlayState.IsPaused,
                                 DurationLeft = 0
                             };
-                        } else
-                        {
-                            return new ActivityObject()
-                            {
-                                Description = Config.RichPresence.RecordingFrom + " " + c.NowPlayingItem.ChannelName,
-                                Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
-                                Title = c.NowPlayingItem.Name,
-                                IsPaused = c.PlayState.IsPaused,
-                                DurationLeft = (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks / 10000)
-                            };
                         }
+                        throw new Exception("Something went wrong on getting the current activity of emby");
                     case ActivityType.Movie:
                         TimeSpan movieDuration = TimeSpan.FromMilliseconds(c.NowPlayingItem.RunTimeTicks/10000);
 
@@ -164,11 +155,11 @@ public class EmbyProvider : IProvider
 
                         return new ActivityObject()
                         {
-                            Description = movieDurationStr + " · Genre: " + genreStr,
+                            Description = (movieDurationStr is "" ? "" : movieDurationStr + " · ") + (genreStr is "" ? "" : "Genre: " + genreStr),
                             Logo = Config.Emby.Url + "/emby/Items/" + c.NowPlayingItem.Id + "/Images/Primary?maxWidth=200&tag=" + c.NowPlayingItem.ImageTags.Primary + "&quality=90",
-                            Title = c.NowPlayingItem.Name + " (" + c.NowPlayingItem.ProductionYear.ToString() + ")",
+                            Title = c.NowPlayingItem.Name + (c.NowPlayingItem.ProductionYear == 0 ? "" :" (" + c.NowPlayingItem.ProductionYear.ToString() + ")"),
                             IsPaused = c.PlayState.IsPaused,
-                            DurationLeft = (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks/10000)
+                            DurationLeft = c.NowPlayingItem.RunTimeTicks == 0 ? 0 : (c.NowPlayingItem.RunTimeTicks / 10000) - (c.PlayState.PositionTicks/10000)
                         };
                     case ActivityType.Show:
 

@@ -7,6 +7,8 @@
     "WatchingTV": "Watching TV",
     "WatchingMovie": "Watching a movie",
     "WatchingShow": "Watching a show",
+    "WatchingRecording": "Watching a recording",
+    "RecordingFrom": "Recording from ",
     "WatchingUnknown": "Watching something",
     "Paused": "Paused", //Small icon tooltip,
     "Playing": "Playing" //Small icon tooltip
