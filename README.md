@@ -8,6 +8,7 @@ High configurable .NET 6 application which shares your activity from plex and/or
 	 - Movies
 	 - Shows
 	 - Live TV with program name
+         - Music / Audiobooks
  - Emby
 	 - Movies
 	 - Shows
