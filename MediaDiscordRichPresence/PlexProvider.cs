@@ -52,6 +52,9 @@ public class PlexProvider : IProvider
             case ActivityType.Show:
                 largeImageText = Config.RichPresence.WatchingShow;
                 break;
+            case ActivityType.Music:
+                largeImageText = Config.RichPresence.ListenMusic;
+                break;
             default:
                 break;
         }
@@ -114,6 +117,8 @@ public class PlexProvider : IProvider
                         return ActivityType.Movie;
                     case "episode":
                         return ActivityType.Show;
+                    case "track":
+                        return ActivityType.Music;
                 }
             }
         }
@@ -260,6 +265,30 @@ public class PlexProvider : IProvider
                     Title = selectedSession.Year != 0 ? selectedSession.Title + " (" + selectedSession.Year.ToString() + ")" : selectedSession.Title,
                     IsPaused = selectedSession.Player.State == "paused",
                     DurationLeft = movieDuration - selectedSession.ViewOffset
+                };
+            case ActivityType.Music:
+                long musicDuration = selectedSession.Duration;
+                if (selectedSession.Media is not null)
+                {
+                    foreach (var media in selectedSession.Media)
+                    {
+                        if (media.Selected) musicDuration = media.Duration;
+                    }
+                }
+                TimeSpan musicDurationTs = TimeSpan.FromMilliseconds(musicDuration);
+
+                string musicDurationStr = "";
+                if (musicDurationTs.Hours > 0) musicDurationStr += musicDurationTs.Hours + "h";
+                if (musicDurationTs.Minutes > 0) musicDurationStr += musicDurationTs.Minutes + "m";
+                if (musicDurationTs.Seconds > 0) musicDurationStr += musicDurationTs.Seconds + "s";
+
+                return new ActivityObject()
+                {
+                    Description = musicDurationStr + " - " + selectedSession.Title,
+                    Logo = Config.Plex.Url + selectedSession.Thumb + "?X-Plex-Token=" + Config.Plex.AuthToken,
+                    Title = selectedSession.ParentTitle,
+                    IsPaused = selectedSession.Player.State == "paused",
+                    DurationLeft = musicDuration - selectedSession.ViewOffset
                 };
         }
         throw new Exception("Something went wrong on getting the current activity of plex");

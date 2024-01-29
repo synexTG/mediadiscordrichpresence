@@ -24,6 +24,7 @@ public class sRichPresence
     public string WatchingShow { get; set; }
     public string WatchingRecording { get; set; }
     public string RecordingFrom { get; set; }
+    public string ListenMusic { get; set; }
     public string WatchingUnknown { get; set; }
     public string Paused { get; set; }
     public string Playing { get; set; }

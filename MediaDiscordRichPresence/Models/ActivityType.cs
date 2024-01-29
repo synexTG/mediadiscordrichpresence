@@ -5,5 +5,6 @@ public enum ActivityType
     Movie,
     Show,
     Recording,
+    Music,
     None
 }
