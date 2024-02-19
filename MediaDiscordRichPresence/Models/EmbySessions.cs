@@ -192,8 +192,8 @@ public class EmbySessions
         public bool IsForced { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
-        public int AverageFrameRate { get; set; }
-        public int RealFrameRate { get; set; }
+        public double AverageFrameRate { get; set; }
+        public double RealFrameRate { get; set; }
         public string Profile { get; set; }
         public string Type { get; set; }
         public string AspectRatio { get; set; }
